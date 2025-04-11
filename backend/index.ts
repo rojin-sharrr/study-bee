@@ -3,27 +3,18 @@ dotenv.config();
 
 import express from "express";
 import connectDB from "./config/data-source";
-import { EntityCourses, EntityUser } from "./entities";
-
+import { EntityCourses, EntityUser, EntityAsset, EntityAssetCourse } from "./entities";
 
 const PORT = process.env.PORT;
 
 async function startApp() {
   const app = express();
   await connectDB();
-  
-  await EntityUser.create({
-    name: "niaodoasnd",
-    password: "asdasd",
-    email: "adasdasd",
-    username:"asdasdasd"
-  }).save();
 
-  EntityCourses.create({
-    name: "Physics",
-    description: "This is an example course"
-  })
-
+  // const asset = await EntityAssetCourse.create({
+  //   course_id: "<example course id>",
+  //   asset_id: "<example asset id>"
+  // }).save();
 
   app.get("/", (req, res) => {
     res.send(`API running `);
@@ -33,4 +24,5 @@ async function startApp() {
     console.log(`App listening on http://localhost:${PORT}`);
   });
 }
+
 startApp();

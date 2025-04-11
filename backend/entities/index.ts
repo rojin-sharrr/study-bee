@@ -1,10 +1,14 @@
 import EntityUser from "./user";
-import EntityCourses from "./courses";
+import EntityCourses from "./course";
+import EntityAsset from "./asset";
+import EntityAssetCourse from "./asset-course";
 
-export { EntityUser, EntityCourses };
+export { EntityUser, EntityCourses, EntityAsset, EntityAssetCourse };
 
 export default {
   EntityCourses,
   EntityUser,
+  EntityAsset,
+  EntityAssetCourse
 };
 

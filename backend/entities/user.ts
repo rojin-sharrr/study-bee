@@ -5,7 +5,7 @@ import {
   OneToMany,
   BeforeInsert,
 } from "typeorm";
-import Course from "./courses";
+import Course from "./course";
 import { CustomBaseEntity } from "./customBaseEntity";
 import { IUserModel } from "../interfaces";
 

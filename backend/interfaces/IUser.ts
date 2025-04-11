@@ -5,5 +5,5 @@ export interface IUserModel extends IBase {
   email: string;
   username: string;
   password: string;
-  courses: any[]
+  //courses: any[]
 }

@@ -13,7 +13,7 @@ const AppDataSource = new DataSource({
   database: "study-bee",
   synchronize: true, // Automatically creates tables
   logging: false,
-  entities: [...Object.values(AllEntities)], // Use the imported entity
+  entities: [...Object.values(AllEntities)], // Use the imported entity: spreading the object
 } as PostgresConnectionOptions);
 
 // Connect to the database
