@@ -25,7 +25,6 @@ export default class User extends CustomBaseEntity implements IUserModel {
 
   @Column({
     nullable: false,
-    unique: true,
   })
   username!: string;
 

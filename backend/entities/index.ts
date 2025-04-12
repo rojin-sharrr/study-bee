@@ -5,10 +5,11 @@ import EntityAssetCourse from "./asset-course";
 
 export { EntityUser, EntityCourses, EntityAsset, EntityAssetCourse };
 
-export default {
-  EntityCourses,
+// Export an array of entities instead of an object
+export default [
   EntityUser,
+  EntityCourses,
   EntityAsset,
   EntityAssetCourse
-};
+];
 
