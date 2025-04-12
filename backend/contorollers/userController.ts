@@ -75,5 +75,21 @@ const registerUser = async (req: Request, res: Response) => {
 
 }
 
+// @desc  :   Logout User
+// @route :   POST /api/users/logout
+// @access:   Private: to logged in User
+const logoutUser = async (req: Request, res: Response) => {
+  res.cookie("jwt", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
 
-export { authUser, registerUser };
+  return ResponseHandler.success({
+    message: "User logged out successfully",
+    res,
+  })
+} 
+
+
+
+export { authUser, registerUser, logoutUser };
