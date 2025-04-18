@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+// import multer from "multer";
 import connectDB from "./config/data-source";
 import {
   EntityCourses,
@@ -11,6 +12,8 @@ import {
 } from "./entities";
 import userRoutes from "./routes/userRoutes";
 import courseRoutes from "./routes/courseRoutes";
+import assetRoutes from "./routes/assetRoutes"
+
 import cookieParser from "cookie-parser";
 
 
@@ -38,6 +41,8 @@ async function startApp() {
 
   app.use("/api/users", userRoutes);
   app.use("/api/course", courseRoutes);
+  app.use("/api/asset", assetRoutes);
+
 
 
   app.listen(PORT, () => {

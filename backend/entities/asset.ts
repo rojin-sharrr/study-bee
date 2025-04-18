@@ -18,5 +18,8 @@ export default class Asset extends CustomBaseEntity implements IAssetModel {
     @Column({nullable: false})
     fileData!: string;
 
+    @Column ({nullable: false})
+    file!: string
+
 
 }
