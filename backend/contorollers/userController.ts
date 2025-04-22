@@ -26,18 +26,17 @@ const authUser = async (req: Request, res: Response) => {
     where: { email: userEmail },
   });
 
-
   if (user && user.password == userPassword) {
     // Keeping cookies after auth.
     generateToken(res, user.email);
 
-    return ResponseHandler.success({
+    ResponseHandler.success({
       message: "Succesfully auth user",
       res,
       data: user,
     });
   } else {
-    return ResponseHandler.unauthorized(res, "Username or password incorrect");
+    ResponseHandler.unauthorized(res, "Username or password incorrect");
   }
 };
 
@@ -45,16 +44,15 @@ const authUser = async (req: Request, res: Response) => {
 // @route :   POST /api/users/register
 // @access:   Public
 const registerUser = async (req: Request, res: Response) => {
-
   const { name, email, username, password } = req.body;
 
   // Check if the user exists:
   const emailExist = await EntityUser.findOne({
-    where: {email: email}
-  })
+    where: { email: email },
+  });
 
-  if (emailExist){
-    return ResponseHandler.badRequest(res, "Bad request: User already exists")
+  if (emailExist) {
+    ResponseHandler.badRequest(res, "Bad request: User already exists");
   }
 
   // Create new User
@@ -66,14 +64,13 @@ const registerUser = async (req: Request, res: Response) => {
   }).save();
 
   // Send back Response
-  return ResponseHandler.success({
+  ResponseHandler.success({
     message: "User registered succesfully",
     data: user,
     statusCode: 200,
     res,
-  })  
-
-}
+  });
+};
 
 // @desc  :   Logout User
 // @route :   POST /api/users/logout
@@ -84,12 +81,10 @@ const logoutUser = async (req: Request, res: Response) => {
     expires: new Date(0),
   });
 
-  return ResponseHandler.success({
+  ResponseHandler.success({
     message: "User logged out successfully",
     res,
-  })
-} 
-
-
+  });
+};
 
 export { authUser, registerUser, logoutUser };

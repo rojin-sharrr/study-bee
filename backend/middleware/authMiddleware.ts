@@ -19,13 +19,12 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
   
 
   if (!token ) {
-    return ResponseHandler.unauthorized(res, "Not Authorized: No token found")
+    ResponseHandler.unauthorized(res, "Not Authorized: No token found")
   }
 
   try {
-    
         // decode the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || "default-secret-key") as {email: string}
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {email: string}
     
         // Find user from using decoded token
         const user = await EntityUser.findOne({
@@ -33,14 +32,15 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
         });
 
         if (!user){
-            return ResponseHandler.unauthorized(res, "Not Authorized: User not found")
+            ResponseHandler.unauthorized(res, "Not Authorized: User not found")
+            return
         }
          // Attach the request with the user( fetched from token)
         req.user = user;
         next();
     
   } catch (error) {
-    return ResponseHandler.unauthorized(res, "Not Authorized: Token failed")
+    ResponseHandler.unauthorized(res, "Not Authorized: Token failed")
   }
   };
 

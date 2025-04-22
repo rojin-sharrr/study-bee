@@ -13,12 +13,15 @@ const createCourse = async (req: Request, res: Response ) => {
     const user = req.user;
 
     if (!user) {
-        return ResponseHandler.unauthorized(res, "User not authenticated");
+        ResponseHandler.unauthorized(res, "User not authenticated");
+        return
     }
 
     // Course title is required
     if (!name){
-        return ResponseHandler.badRequest(res, "Bad request: Name of the course is required")
+        ResponseHandler.badRequest(res, "Bad request: Name of the course is required")
+        return
+
     }
 
     // Check if the course already exists for this user:
@@ -30,7 +33,7 @@ const createCourse = async (req: Request, res: Response ) => {
     });
 
     if (courseExist) {
-        return ResponseHandler.badRequest(res, "Bad request: Course exists already")
+        ResponseHandler.badRequest(res, "Bad request: Course exists already")
     } else {
         const course = await EntityCourses.create({
             name,
@@ -38,7 +41,7 @@ const createCourse = async (req: Request, res: Response ) => {
             creator: user,
         }).save();
 
-        return ResponseHandler.success({
+        ResponseHandler.success({
             res,
             data: course,
             message: "Course created successfully."
@@ -57,7 +60,8 @@ const getUserCourses = async (req: Request, res: Response) => {
 
     // User Auth is required.
     if (!user) {
-        return ResponseHandler.unauthorized(res, "User not authenticated");
+        ResponseHandler.unauthorized(res, "User not authenticated");
+        return
     }
     
     
@@ -69,7 +73,7 @@ const getUserCourses = async (req: Request, res: Response) => {
     })
  
     // sending back the courses on response
-    return ResponseHandler.success({
+    ResponseHandler.success({
         res,
         data: courses, 
         message: "Courses fetched successfully."
@@ -89,16 +93,16 @@ const getCourse = async (req: Request, res: Response) => {
             where: {id: id}
         })
         if (course){
-            return ResponseHandler.success({
+            ResponseHandler.success({
                 res, 
                 message: "Course fetched succesfully",
                 data: course,
             })
         }else{
-            return ResponseHandler.notFound(res, "Not Found: no course found")
+            ResponseHandler.notFound(res, "Not Found: no course found")
         }
     } catch (error) {
-        return ResponseHandler.error({
+        ResponseHandler.error({
             statusCode: 400,
             message: "Invalid id",
             res,
@@ -120,15 +124,15 @@ const deleteCourse = async (req: Request, res: Response) => {
         })
         if (course){
             await EntityCourses.delete({ id: id })
-            return ResponseHandler.success({
+            ResponseHandler.success({
                 res, 
                 message: "Course Deleted successfully",
             })
         }else{
-            return ResponseHandler.notFound(res, "Not Found: no course found")
+            ResponseHandler.notFound(res, "Not Found: no course found")
         }
     } catch (error) {
-        return ResponseHandler.error({
+        ResponseHandler.error({
             statusCode: 400,
             message: "Invalid id",
             res,

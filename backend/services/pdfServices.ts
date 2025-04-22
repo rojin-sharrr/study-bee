@@ -67,7 +67,6 @@ const requestLLM = async (pdf: PDFParseResult) => {
 
 const saveDB = async (
   req: Request,
-  res: Response,
   parsedPdf: PDFParseResult
 ) => {
   const fileName = req.file?.originalname;
