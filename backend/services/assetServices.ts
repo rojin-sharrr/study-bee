@@ -42,5 +42,25 @@ const getAssetsFromCourseId = async (courseId: string) => {
   return assets;
 };
 
+const deleteAssetFromDB = async (assetId: string): Promise<void> => {
+  // Delete from asset-course table first
+  await EntityAssetCourse.delete({ asset_id: assetId });
+  // Then delete from asset table
+  await EntityAsset.delete({ id: assetId });
+};
 
-export { getAssetsFromCourseId, findAssetById };
+const checkAssetExist = async (assetId: string): Promise<Asset | null> => {
+
+  const asset = await EntityAsset.findOne({
+    where: {id: assetId}
+  })
+
+  if(!asset){
+    return null;
+  }
+  return asset;
+}
+
+
+
+export { getAssetsFromCourseId, findAssetById, deleteAssetFromDB, checkAssetExist };

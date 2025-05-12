@@ -5,7 +5,7 @@ import isUUID from "../utils/isUuid";
 const findCourseById = async (courseId: string): Promise<Course | null> => {
   // Check if the courseId is an UUID
   if (!isUUID(courseId)){
-        throw new Error("The provided course")
+        throw new Error("The provided courseId is not an UUID")
   }
     // Check if the course exists
     const course = await EntityCourses.findOne({

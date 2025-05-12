@@ -26,14 +26,6 @@ const model = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })("gpt-4o-mini");
 
-interface PDFParseResult {
-  text: string;
-  numrender: number;
-  numpages: number;
-  info: any;
-  metadata: any;
-  version: string;
-}
 
 interface QuizData {
   question: string;
@@ -41,47 +33,42 @@ interface QuizData {
   answer_index: number;
 }
 
-const parsePDF = async (req: Request, res: Response) => {
+const parsePDF = async (filePath: string) => {
   // Picking the file from local machine and reading it in raw Binary foramt: into Buffer
-  const existingPdfByte = fs.readFileSync(
-    `./file-uploads/${req.file?.filename}`
-  );
+  const existingPdfByte = fs.readFileSync(filePath);
   // Now parsing the pdf
   const parsedPDF = await pdfParse(existingPdfByte);
   return parsedPDF;
 };
 
-const requestLLM = async (pdf: PDFParseResult) => {
+const requestLLM = async (pdf: string) => {
   const {
     object: { questions },
     usage,
   } = await generateObject({
     model,
     schema: myOutputSchema,
-    prompt: PROMPTS.quizPrompt(pdf.text),
+    prompt: PROMPTS.quizPrompt(pdf),
   });
-  console.log(questions);
 
   return questions;
 };
 
 const saveDB = async (
-  req: Request,
-  parsedPdf: PDFParseResult
+  fileName: string | undefined,
+  fileType: string | undefined,
+  file: string | undefined,
+  course_id: string | undefined,
 ) => {
-  const fileName = req.file?.originalname;
-  const fileType = req.file?.mimetype;
-  const fileData = parsedPdf.text;
-  const file = `./${req.file?.path}`;
+
 
   const asset = await EntityAsset.create({
     name: fileName,
-    fileData,
     fileType,
     file,
   }).save();
 
-  const course_id = req.body.course_id;
+
   const asset_id = asset.id;
 
   // Saving to the asset-course as well

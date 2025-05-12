@@ -1,47 +1,97 @@
 import jwt from "jsonwebtoken";
-import { EntityUser } from "../entities";
+import { EntityCourses, EntityUser } from "../entities";
 import { Request, Response, NextFunction } from "express";
 import { ResponseHandler } from "../utils/response";
+import Course from "../entities/course";
 
 // Extend Express Request type to include user
 declare global {
   namespace Express {
     interface Request {
       user?: EntityUser;
+      course?: Course;
     }
   }
 }
 
 //For Protect routes: checks and verifies the jwt tokens(for users who have logged in and have not logged out)
 const protect = async (req: Request, res: Response, next: NextFunction) => {
-  let token;
-  token = req.cookies.jwt; 
-  
-
-  if (!token ) {
-    ResponseHandler.unauthorized(res, "Not Authorized: No token found")
-  }
-
   try {
-        // decode the token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {email: string}
-    
-        // Find user from using decoded token
-        const user = await EntityUser.findOne({
-            where: {email: decoded.email }
-        });
+    let token;
+    token = req.cookies.jwt;
 
-        if (!user){
-            ResponseHandler.unauthorized(res, "Not Authorized: User not found")
-            return
-        }
-         // Attach the request with the user( fetched from token)
-        req.user = user;
-        next();
-    
-  } catch (error) {
-    ResponseHandler.unauthorized(res, "Not Authorized: Token failed")
+    if (!token) {
+      throw new Error("Not Authorized. No token found.");
+    }
+    // decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+      email: string;
+    };
+
+    // Find user from using decoded token
+    const user = await EntityUser.findOne({
+      where: { email: decoded.email },
+    });
+
+    if (!user) {
+      throw new Error("Not found. User not found.");
+    }
+    // Attach the request with the user( fetched from token)
+    console.log(`protect middleware success`)
+    req.user = user;
+    next();
+  } catch (error: any) {
+    ResponseHandler.error({
+      res,
+      message:
+        error.message ||
+        "An error occurred while verifying the user with cookies.",
+    });
+    return;
   }
-  };
+};
+
+export const verifyCourseOwnership = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { courseId } = req.query as {
+      courseId: string;
+    };
+
+    if (!courseId) {
+      throw new Error("Not valid course provided");
+    }
+
+    const course = await EntityCourses.findOne({
+      where: { id: courseId },
+      relations: ["creator"],
+    });
+
+    if (!course) {
+      throw new Error("No course found for the provided courseId");
+    }
+
+    if (course.creator.id !== req.user!.id) {
+      throw new Error("Not authorized. You are not the owner of this course.");
+    }
+    
+    // Attach the request with the course( fetched from courseId)
+    console.log(`verifyOwnership middleware success`);
+    req.course = course;
+
+    next();
+  } catch (error: any) {
+    console.log(
+      error.message || "Error occurred in verifyCourseOwnership middleware"
+    );
+    ResponseHandler.error({
+      res,
+      message: error.message || "Error verifying course's ownership",
+    });
+  }
+};
 
 export default protect;

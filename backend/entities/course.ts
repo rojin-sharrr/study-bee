@@ -15,7 +15,7 @@ export default class Course extends CustomBaseEntity implements ICourseModel {
   @Column({ nullable: true })
   description?: string;
 
-
+  
   @ManyToOne(() => User, (user) => user.courses)
   creator!: User;
 

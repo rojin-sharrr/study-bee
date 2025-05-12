@@ -11,9 +11,11 @@ import  { Response } from "express";
     // Set JWT to HTTP-Only cookie:
     res.cookie('jwt', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV !== 'development',
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 Days (in terms of milliseconds)
+        secure: true,  // Required for SameSite: None
+        sameSite: 'none',  // Required for cross-site cookies
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 Days
+        path: '/',
+        domain: 'localhost'  // Specify domain
     });
 }
 

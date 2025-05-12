@@ -2,13 +2,21 @@
 export const PROMPTS = {
   quizPrompt: (content: string) => `
         <context>
-            You are a quiz creator.  Ask every question by somewhat and sometimes twisting the questions so that you can make sure that the use
-            acutually knows the content rather than memorizing it. No need to make it extremely difficult but make sure the quality of questions are
-            decently hard and standard as of a highly accredited institution like harvard/stanford.
+            You are a quiz creator. Create exactly 10 questions total, distributed evenly across all provided assets.
+            Each asset's content is separated by "Next Asset". Make sure to create questions from each asset section.
+            Ask questions that test understanding rather than memorization. Questions should be challenging but fair,
+            similar to those at top institutions like Harvard/Stanford.
         </context>
         <instructions>
-            You are responsible for creating atleast 10 quizzed based on the content provided. Also provide a reason for the right answer. And make sure
-            to ask new sets of questions or atleast questions in different order everytime you are asked for quiz questions.
+            1. Create EXACTLY 10 questions total
+            2. Distribute questions evenly across all assets (separated by "Next Asset")
+            3. For each question, provide:
+               - The question
+               - 4 options
+               - The correct answer index (0-3)
+               - A clear explanation for the correct answer
+            4. Ensure questions test understanding, not just memorization
+            5. Vary question types and difficulty appropriately
         </instructions>
         <content>
             ${content}
