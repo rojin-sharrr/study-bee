@@ -60,8 +60,7 @@ const saveDB = async (
   file: string | undefined,
   course_id: string | undefined,
 ) => {
-
-
+  
   const asset = await EntityAsset.create({
     name: fileName,
     fileType,
@@ -80,4 +79,22 @@ const saveDB = async (
   return;
 };
 
-export { parsePDF, requestLLM, saveDB };
+const splitIntoPages = async (filepath: string) => {
+  const pdf = await parsePDF(filepath);
+  const text = pdf.text;
+  const numPages = pdf.numpages;
+
+  // Calculate approximate characters per page
+  const charsPerPage = Math.floor(text.length / numPages);
+
+  // Split text into pages
+  const pages = [];
+  for (let i = 0; i < numPages; i++) {
+    const start = i * charsPerPage;
+    const end = i === numPages - 1 ? text.length : (i + 1) * charsPerPage;
+    pages.push(text.slice(start, end).trim());
+  }
+  return pages;
+}
+
+export { parsePDF, requestLLM, saveDB, splitIntoPages };

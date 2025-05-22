@@ -1,6 +1,5 @@
 import { ResponseHandler } from "../utils/response";
 import { Request, Response } from "express";
-import verifyOwnership from "../utils/verifyOwnership";
 import { findAssetById } from "../services/assetServices";
 import { getCourseFromAssetId } from "../services/courseServices";
 import { parsePDF, requestLLM } from "../services/pdfServices";

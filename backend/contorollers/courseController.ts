@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
-import { EntityCourses } from "../entities";
+import { EntityCourses, EntityAsset, EntityAssetCourse } from "../entities";
 import { ResponseHandler } from "../utils/response";
+import { In } from "typeorm";
+import { getAssetsFromCourseId } from "../services/assetServices";
 
 // @desc  :   Create Course
 // @route :   POST /api/course/create
@@ -107,6 +109,41 @@ const getCourse = async (req: Request, res: Response) => {
   }
 };
 
+const getCourseAssetsStatus = async (req: Request, res: Response) => {
+  // this checks if any of the asset associated with this course is compelted or not
+  const id = req.params.id;
+  const course = await EntityCourses.findOne({
+    where: { id },
+  });
+
+  if (!course) {
+    throw new Error("Not found. Course with provided courseId not found");
+  }
+
+
+  const assets = await getAssetsFromCourseId(id);
+
+
+  // now we need to check if all the assets are completed or not
+  const allAssetsCompleted = assets.every(
+    (asset) => asset.isEmbedding === "COMPLETED"
+  );
+
+  if (allAssetsCompleted) {
+    ResponseHandler.success({
+      res,
+      message: "All assets are completed",
+      data: true,
+    });
+  } else {
+    ResponseHandler.success({
+      res,
+      message: "All assets are not completed",
+      data: false,
+    });
+  }
+};
+
 // @desc  :   Delete a course
 // @route :   DELETE /api/course/:id
 // @access:   Private: Users
@@ -122,11 +159,28 @@ const deleteCourse = async (req: Request, res: Response) => {
       throw new Error("Not found. Course with provided courseId not found");
     }
 
+    // Get all asset-course relationships for this course
+    const relatedAssetCourses = await EntityAssetCourse.find({
+      where: { course_id: course.id }
+    });
+
+    // Get all asset IDs from the relationships
+    const assetIds = relatedAssetCourses.map(rel => rel.asset_id);
+
+    // Delete the relationships from asset-course junction table
+    await EntityAssetCourse.delete({ course_id: course.id });
+
+    // Delete the actual assets
+    if (assetIds.length > 0) {
+      await EntityAsset.delete({ id: In(assetIds) });
+    }
+
+    // Finally delete the course
     await EntityCourses.delete({ id });
 
     ResponseHandler.success({
       res,
-      message: "Course Deleted successfully",
+      message: "Course and associated assets deleted successfully",
     });
   } catch (error: any) {
     console.log("Error in delete course contoller catch block");
@@ -137,4 +191,10 @@ const deleteCourse = async (req: Request, res: Response) => {
   }
 };
 
-export { createCourse, getUserCourses, getCourse, deleteCourse };
+export {
+  createCourse,
+  getUserCourses,
+  getCourse,
+  deleteCourse,
+  getCourseAssetsStatus,
+};

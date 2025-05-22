@@ -4,7 +4,6 @@ import { parsePDF, requestLLM, saveDB } from "../services/pdfServices";
 import fs from "fs/promises";
 import { In } from "typeorm";
 
-import verifyOwnership from "../utils/verifyOwnership";
 import {
   findCourseById,
   getCourseFromAssetId,
@@ -43,22 +42,18 @@ const createAsset = async (req: Request, res: Response) => {
       throw new Error("Not Found: No course found");
     }
 
-    // check ownership
-    if (!verifyOwnership(course.creator.id, req.user?.id!)) {
-      throw new Error(
-        "Not Authorized: Logged in user is not the owner of the course."
-      );
-    }
-
     // Get the parsed pdf using the file we get from multer as req.file
     const pdf = await parsePDF(filePath);
 
     // Record in the database in asset table and asset_course table
     await saveDB(fileName, fileType, file, course_id);
 
-    //Todo: Add the requestLLM later whenn generating the quiz.
-    // generated question from Vercel ai-sdk
-    // const questions = await requestLLM(pdf);
+
+    // create embedding
+    // draft
+    // isembeeded: draft | processing | copleted
+    // processing
+    // cmopleted
 
     ResponseHandler.success({
       res,
@@ -120,18 +115,6 @@ const getAnAsset = async (req: Request, res: Response): Promise<void> => {
     const assetsCourse = await getCourseFromAssetId(assetId);
     if (!assetsCourse) {
       throw new Error("Not Found: No course associated with this asset");
-    }
-
-    // Verify ownership
-    const ownerVerified = verifyOwnership(
-      assetsCourse.creator.id,
-      req.user?.id!
-    );
-
-    if (!ownerVerified) {
-      throw new Error(
-        "The logged in user is not the owner of this assset's course."
-      );
     }
 
     ResponseHandler.success({
@@ -214,3 +197,16 @@ const viewAsset = async (req: Request, res: Response) => {
 };
 
 export { createAsset, getAllAsset, getAnAsset, deleteAsset, viewAsset };
+
+// (async function abasicCronJob() {
+//   while (true) {
+//     // sync all remianing assets
+//     // get all assets with status draft
+//     // send them all for embeddings
+//     const ids = await getAssetIdsWithStatus("DRAFT");
+//     for (const id of ids) {
+//       await createEmbeddingsByAssetId(id);
+//     }
+//     await new Promise((resolve) => setTimeout(resolve, 10000));
+//   }
+// })();

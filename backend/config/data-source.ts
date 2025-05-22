@@ -25,7 +25,7 @@ const connectDB = async () => {
         connection.options.database
       }\" at port \"${
         (connection.options as PostgresConnectionOptions).port
-      }\" `
+      }\"`
     );
     return connection;
   } catch (error) {

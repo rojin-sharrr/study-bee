@@ -1,16 +1,18 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import connectDB from "./config/data-source";
 import userRoutes from "./routes/userRoutes";
 import courseRoutes from "./routes/courseRoutes";
 import assetRoutes from "./routes/assetRoutes";
 import quizRoutes from "./routes/quizRoutes";
+import chatRoutes from "./routes/chatRoutes";
 import cors from "cors";
-
 import cookieParser from "cookie-parser";
 import protect, { verifyCourseOwnership } from "./middleware/authMiddleware";
+import cronFunction from "./services/cron.service";
+import { sendDraftAssetIdForEmbeddings } from "./services/embeddingService";
 
 const PORT = process.env.PORT;
 
@@ -47,7 +49,20 @@ async function startApp() {
   app.use("/api/users", userRoutes);
   app.use("/api/course", courseRoutes);
   app.use("/api/asset", protect, verifyCourseOwnership, assetRoutes);
-  app.use("/api/quiz",protect, verifyCourseOwnership, quizRoutes);
+  app.use("/api/quiz", protect, verifyCourseOwnership, quizRoutes);
+  app.use("/api/chat", protect, verifyCourseOwnership, chatRoutes);
+
+  // handle errors
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    console.log(err);
+    res.status(400).json({
+      message: err.message,
+      extrainfo: err.stack,
+      success: false,
+    });
+  });
+
+  cronFunction(3, sendDraftAssetIdForEmbeddings);
 
   app.listen(PORT, () => {
     console.log(`App listening on http://localhost:${PORT}`);

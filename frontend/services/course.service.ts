@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import axiosInstance from "./axios.handler";
 import { ICourseModel } from "@/interfaces/ICourse";
 
@@ -38,10 +39,12 @@ const createCourse = async ({
   description: string;
 }): Promise<ApiResponse<ICourseModel>> => {
   try {
+    console.log(`making create course req: ${name}`)
     const { data } = await axiosInstance.post("/course/create", {
       name,
       description,
     });
+    console.log(`the data received back is: ${data}`)
     console.log(data);
     return {
       data: data?.data as ICourseModel,
@@ -49,11 +52,11 @@ const createCourse = async ({
       success: true,
       error: false,
     };
-  } catch (error) {
-    console.log(`Ran into an error in function createCourse`);
+  } catch (error: any) {
+    console.log(`Ran into an error in function createCourse`, error.message);
     return {
       data: null,
-      message: "Failed to create course",
+      message: error.messae || "Failed to create course",
       success: false,
       error: true,
     };
@@ -100,9 +103,21 @@ const deleteCourseById = async (courseId: string) => {
   }
 };
 
+const getCourseAssetStatusById = async (courseId: string): Promise<boolean | null >  => {
+  try {
+    const { data: status} = await axiosInstance.get(`/course/${courseId}/assetstatus`);
+    return status?.data;
+  } catch (error: any) {
+    toast.error("Error fetching Course's assets-status");
+    console.log(error.message || "Error in getCourseAssetStatusById");
+    return null;
+  }
+}
+
 export default {
   getAllCourses,
   createCourse,
   getCourseById,
   deleteCourseById,
+  getCourseAssetStatusById,
 };

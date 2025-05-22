@@ -24,7 +24,10 @@ import {
   ArrowLeft,
   Plus,
   FileText,
+  MessageSquare,
+  Loader2,
 } from "lucide-react";
+import { stat } from "fs";
 
 const CoursePage = () => {
   const params = useParams();
@@ -35,6 +38,7 @@ const CoursePage = () => {
   const [allAssets, setAllAssets] = useState<IAssetModel[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const deleteAssetHandler = async (assetId: string) => {
     try {
@@ -43,6 +47,20 @@ const CoursePage = () => {
     } catch (error) {
       toast.error("Failed to delete asset");
       console.log(`Error occurred in deleteAsset`);
+    }
+  };
+
+  const checkAssetStatus = async () => {
+    try {
+      const status = await CourseService.getCourseAssetStatusById(courseId);
+      if (!status) {
+        setIsProcessing(true);
+      } else {
+        setIsProcessing(false);
+      }
+    } catch (error: any) {
+      toast.error("Failed to check status of Assets");
+      console.log(`Error in checkAssetStatus: ${error.message || error}` );
     }
   };
 
@@ -62,30 +80,33 @@ const CoursePage = () => {
     }
   };
 
+  const fetchCourse = async () => {
+    try {
+      setLoading(true);
+      const response = await CourseService.getCourseById(courseId);
+
+      if (response.error) {
+        setError(response.message);
+        toast.error(response.message);
+      } else {
+        setCourse(response.data);
+      }
+    } catch (err) {
+      const errorMessage = "Failed to fetch course";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const viewFileHandler = async (assetId: string, courseId: string) => {
-    window.open(`http://localhost:8000/api/asset/${assetId}/view?courseId=${courseId}`);
+    window.open(
+      `http://localhost:8000/api/asset/${assetId}/view?courseId=${courseId}`
+    );
   };
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        setLoading(true);
-        const response = await CourseService.getCourseById(courseId);
-
-        if (response.error) {
-          setError(response.message);
-          toast.error(response.message);
-        } else {
-          setCourse(response.data);
-        }
-      } catch (err) {
-        const errorMessage = "Failed to fetch course";
-        setError(errorMessage);
-        toast.error(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (courseId) {
       fetchCourse();
     }
@@ -96,6 +117,12 @@ const CoursePage = () => {
       fetchAllAssets();
     }
   }, [courseId]);
+
+  useEffect(() => {
+    if (allAssets) {
+      checkAssetStatus();
+    }
+  }, [allAssets]);
 
   if (loading) {
     return (
@@ -176,12 +203,25 @@ const CoursePage = () => {
                     Take Quiz
                   </Button>
                   <Button
-                    onClick={() => router.push(`/course/${courseId}/past-quizzes`)}
+                    onClick={() =>
+                      router.push(`/course/${courseId}/past-quizzes`)
+                    }
                     variant="outline"
                     className="rounded-full px-6 py-2 font-medium transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2"
                   >
                     <FileText className="h-4 w-4" />
                     Past Quizzes
+                  </Button>
+                  <Button
+                    onClick={() => router.push(`/course/${courseId}/chat`)}
+                    variant="outline"
+                    disabled={
+                      isProcessing || !allAssets || allAssets.length === 0
+                    }
+                    className="rounded-full px-6 py-2 font-medium transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {isProcessing ? "Processing Assets..." : "Ask Questions"}
                   </Button>
                 </div>
               </div>
@@ -272,6 +312,21 @@ const CoursePage = () => {
                         <p className="text-sm text-gray-500">
                           Added {new Date(asset.createdAt).toLocaleDateString()}
                         </p>
+                        <Badge
+                          variant={
+                            asset.isEmbedding === "COMPLETED"
+                              ? "default"
+                              : asset.isEmbedding === "DRAFT"
+                              ? "destructive"
+                              : "default"
+                          }
+                          className="w-full"
+                        >
+                          {asset.isEmbedding === "PROCESSING" && (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          )}
+                          {asset.isEmbedding}
+                        </Badge>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

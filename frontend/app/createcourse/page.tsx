@@ -24,6 +24,7 @@ const CreateCourse = () => {
 
   const createCourseHandler = async () => {
     try {
+      console.log(`Making a create Course req from frontend page`)
       const data = await CourseService.createCourse({ name, description });
 
       if (data.error) {

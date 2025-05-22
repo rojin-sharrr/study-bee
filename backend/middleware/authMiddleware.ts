@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
-import { EntityCourses, EntityUser } from "../entities";
+import { EntityAssetCourse, EntityCourses, EntityUser } from "../entities";
 import { Request, Response, NextFunction } from "express";
 import { ResponseHandler } from "../utils/response";
 import Course from "../entities/course";
+import { getAssetsFromCourseId } from "../services/assetServices";
 
 // Extend Express Request type to include user
 declare global {
@@ -37,7 +38,6 @@ const protect = async (req: Request, res: Response, next: NextFunction) => {
       throw new Error("Not found. User not found.");
     }
     // Attach the request with the user( fetched from token)
-    console.log(`protect middleware success`)
     req.user = user;
     next();
   } catch (error: any) {
@@ -62,7 +62,7 @@ export const verifyCourseOwnership = async (
     };
 
     if (!courseId) {
-      throw new Error("Not valid course provided");
+      throw new Error("No course provided in query params");
     }
 
     const course = await EntityCourses.findOne({
@@ -79,7 +79,6 @@ export const verifyCourseOwnership = async (
     }
     
     // Attach the request with the course( fetched from courseId)
-    console.log(`verifyOwnership middleware success`);
     req.course = course;
 
     next();
@@ -90,6 +89,36 @@ export const verifyCourseOwnership = async (
     ResponseHandler.error({
       res,
       message: error.message || "Error verifying course's ownership",
+    });
+  }
+};
+
+export const verifyCourseEmbedding = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(`verify course embedding middleware hit`);
+  const { courseId } = req.query as { courseId: string };
+
+  if(!courseId){
+    console.log(`No CourseId in query Params for verifyCourseEmbedding middleware`)
+    throw new Error("No CourseId Provided")
+  }
+
+  const assets = await getAssetsFromCourseId(courseId);
+
+   // now we need to check if all the assets are completed or not
+   const allAssetsCompleted = assets.every(
+    (asset) => asset.isEmbedding === "COMPLETED"
+  );
+
+  if(allAssetsCompleted){
+    next();
+  }else{
+    res.send({
+      success: false,
+      data: null,
     });
   }
 };
