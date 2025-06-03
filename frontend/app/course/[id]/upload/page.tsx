@@ -35,8 +35,10 @@ const CreateAsset = () => {
       } else {
         toast.error(response.message || 'Failed to create asset');
       }
-    } catch (error) {
-      toast.error('An error occurred while creating the asset');
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while creating the asset';
+      toast.error(errorMessage);
+      console.error('Error creating asset:', error);
     } finally {
       setIsLoading(false);
     }

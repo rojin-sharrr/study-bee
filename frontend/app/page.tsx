@@ -32,8 +32,10 @@ export default function Courses() {
       } else {
         setCourses(courses.data);
       }
-    } catch (error: any) {
-      setError("Failed to load courses");
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to load courses";
+      setError(errorMessage);
+      console.error("Error fetching courses:", error);
     } finally {
       setLoading(false);
     }
@@ -56,8 +58,10 @@ export default function Courses() {
     try {
       await CourseService.deleteCourseById(courseId);
       await fetchCourses(); // Refetch courses after deletion
-    } catch (error) {
-      setError("Failed to delete course");
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete course";
+      setError(errorMessage);
+      console.error("Error deleting course:", error);
     }
   };
 

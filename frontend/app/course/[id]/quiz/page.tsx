@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AssetService, QuizService } from "@/services";
 import { IAssetModel } from "@/interfaces/IAsset";
@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Check,
   Loader2,
-  CloudLightning,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,7 +28,6 @@ const QuizPage = () => {
   const params = useParams();
   const router = useRouter();
   const courseId = params.id as string;
-
 
   const [loading, setLoading] = useState(true);
   const [allAssets, setAllAssets] = useState<IAssetModel[]>([]);
@@ -75,14 +73,15 @@ const QuizPage = () => {
       console.log(`passing courseId from frontend page: ${courseId}`)
       const quizId = await QuizService.createQuizFromAssetIds(selectedAssets, quizName, courseId);
       router.push(`/course/${courseId}/quiz/${quizId}`);
-    } catch (error) {
+    } catch (error: Error | unknown) {
       toast.error("Failed to create quiz");
+      console.error("Error creating quiz:", error instanceof Error ? error.message : error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchAllAssets = async () => {
+  const fetchAllAssets = useCallback(async () => {
     try {
       setLoading(true);
       const response = await AssetService.getAllAssets(courseId);
@@ -91,18 +90,19 @@ const QuizPage = () => {
       } else {
         setAllAssets(response.data || []);
       }
-    } catch (error) {
+    } catch (error: Error | unknown) {
       toast.error("Failed to load assets");
+      console.error("Error loading assets:", error instanceof Error ? error.message : error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]);
 
   useEffect(() => {
     if (courseId) {
       fetchAllAssets();
     }
-  }, [courseId]);
+  }, [courseId, fetchAllAssets]);
 
   return (
     <div className="container mx-auto px-4 py-8">

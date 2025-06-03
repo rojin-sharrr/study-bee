@@ -4,7 +4,7 @@ import { getCourseCreator, getCourseFromAssetId } from "./courseServices";
 
 export const sendDraftAssetIdForEmbeddings = async () => {
   const assetsWithDraft = await getAssetsWithStatus("DRAFT");
-  console.log("I found this many", assetsWithDraft.length);
+  // console.log("I found this many", assetsWithDraft.length);
 
   if (assetsWithDraft.length > 0) {
     for (let { id: assetId } of assetsWithDraft) {

@@ -53,7 +53,7 @@ const queryToDB = async (
 ) => {
   // Similarity search
   const index = pc.index(indexName).namespace(namespace);
-
+  console.log(`The indexname and namespace are: ${indexName} , ${namespace}` );
   // Get the vector from embedding response object
   const queryVector = embedding.data[0].embedding;
 
@@ -82,6 +82,7 @@ const getSimilarRecords = async (
 ) => {
   // create the embedding of the provided text
   const embedding = await createSingleVectorEmbedding(query);
+  console.log(`The embedding of the QUERY is: ${embedding}`)
   console.log(
     `The query and threshold received are: ${query} and ${threshold}`
   );
@@ -94,7 +95,7 @@ const getSimilarRecords = async (
 const getSimilarContent = async ({ query, userId, courseId }: { query: string, userId: string, courseId: string }) => {
   const namespace = `user-${userId}-course-${courseId}`;
   console.log("Tool input:", query, userId, courseId);
-  const similarRecords = await getSimilarRecords(query, 0, "chatbotindex", namespace);
+  const similarRecords = await getSimilarRecords(query, 0.1, "chatbotindex", namespace);
 
   if (similarRecords.length === 0) {
     return null;
@@ -122,6 +123,7 @@ const getSimilarContent = async ({ query, userId, courseId }: { query: string, u
 
 const generateResponse = async (query: string, userId: string, courseId: string) => {
 const response = await generateQueryResponse({query, userId, courseId});
+console.log(`The response returned back from the openai model based on context is: ${response}`)
   return response;
 };
 

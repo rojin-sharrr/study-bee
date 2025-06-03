@@ -40,7 +40,7 @@ const getAllQuiz = async (courseId: string) => {
 
 const updateHighScore = async (quizId: string, score: number, courseId: string) => {
   try {
-    score = score * 10;
+    score = score * 10 ;
     await axiosInstance.post(`quiz/highscore?courseId=${courseId}`, {
       quizId,
       score,

@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +12,7 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthService } from "@/services";
-
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,9 +35,13 @@ export default function LoginPage() {
       if (response) {
         router.push("/");
       }
-    } catch (error: any) {
-      console.error("Error response:", error.response?.data);
-      setError(error.response?.data?.message || "Login failed");
+    } catch (error: Error | unknown) {
+      if (error instanceof Error) {
+        console.error("Error response:", error.message);
+        setError(error.message);
+      } else {
+        setError("Login failed");
+      }
     }
   };
 
@@ -68,10 +71,10 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
           <div className="text-sm text-muted-foreground text-center">
-            Don't have an account?
+            Don&apos;t have an account?
           </div>
           <Button variant="outline" className="w-full" asChild>
-            <a href="/signup">Sign up</a>
+            <Link href="/signup">Sign up</Link>
           </Button>
         </CardFooter>
       </Card>

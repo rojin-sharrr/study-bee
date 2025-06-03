@@ -39,18 +39,28 @@ const generateQueryResponse = async ({
     tools: {
       queryResponse: tool({
         description:
-          "This is a tool which should be called when you need more context about the query made by the user.",
+          "This is a tool which should be called when you need more context about the query made by the user. You will need the query parameter and courseId and userId to call it",
         parameters: z.object({
           query: z.string().describe("The query to search for similar content"),
-          userId: z.string().describe("The user Id of the user making the query"),
-          courseId:  z.string().describe("The course'd id, of which we are getting the query from"),
+          userId: z
+            .string()
+            .describe("The user Id of the user making the query"),
+          courseId: z
+            .string()
+            .describe(
+              "The course'd id, of which we are getting the query from"
+            ),
         }),
-        execute: getSimilarContent,
+        execute: async (params) => {
+          console.log("Tool execution with params:", params);
+          const context = await getSimilarContent(params);
+          console.log("Context received:", context);
+          return context;
+        },
       }),
     },
     maxSteps: 10,
-    prompt: `You are a friendly and knowledgeable AI tutor who helps students understand their course material. Your goal is to have natural, engaging conversations while providing accurate information.
-
+    prompt: `
 When responding:
 1. You can ONLY respond in two cases:
    a) When the user sends greetings or general conversation
@@ -58,28 +68,28 @@ When responding:
 2. For greetings and general conversation:
    - Be conversational and friendly
    - Use a warm, encouraging tone
-   - Keep it brief and natural
+   - Keep it brief and natural and short
+   -Emphasize on keeping it short and DO NOT HALLUCINATE.
 3. For course-related questions:
    - ALWAYS use the queryResponse tool first
-   - If the tool returns null or no context, ONLY respond with: "Sorry, no context found"
+   - If the tool returns null or empty context, ONLY respond with: "Sorry, no context found"
    - DO NOT attempt to answer the question if no context is found
    - When you have context, explain things in a clear, engaging way
    - Use examples and analogies when helpful
    - Break down complex concepts into simpler parts
-   - IMPORTANT: Only use information from the context provided by the queryResponse tool. Never make up or assume any information.
+   - IMPORTANT: Only use information from the context provided by the queryResponse tool. Never make up or assume any information and DO NOT HALLUCINATE.
 4. Keep responses concise but conversational
 5. Use natural language - avoid sounding like a textbook or search results
-6. Show personality and empathy in your responses
+6. Show personality and empathy in your responses and DO NOT HALLUCINATE.
 
-Remember: You can ONLY respond to greetings or questions where you have context from the queryResponse tool. For all other questions without context, respond with "Sorry, no context found".
+Remember: You can ONLY respond to questions where you have context from the queryResponse tool. For all other questions without context, respond with "Sorry, no context found".
 
-User's question: ${query} and user's userId: ${userId} and the course's courseId: ${courseId}`,
+User's question: ${query} and user's userId: ${userId} and the course's courseId: ${courseId}. When you are calling tool response, make sure you send the query property`,
   });
   return result.text?.length !== 0
     ? result.text
     : "I'm not quite sure about that. Could you rephrase your question or provide more details?";
 };
-
 
 export default openai;
 

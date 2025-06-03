@@ -4,14 +4,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Link } from "lucide-react";
 import { useState } from 'react';
-import axios, {isCancel, isAxiosError} from "axios";
+import axios from "axios";
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-export default function signupPage() {
+export default function SignupPage() {
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -85,7 +84,7 @@ export default function signupPage() {
             Already have an account?
           </div>
           <Button variant="outline" className="w-full" asChild>
-            <a href="/login">Login</a>
+            <Link href="/login">Login</Link>
           </Button>
         </CardFooter>
       </Card>

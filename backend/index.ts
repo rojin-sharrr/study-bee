@@ -62,7 +62,7 @@ async function startApp() {
     });
   });
 
-  cronFunction(3, sendDraftAssetIdForEmbeddings);
+  cronFunction(60, sendDraftAssetIdForEmbeddings);
 
   app.listen(PORT, () => {
     console.log(`App listening on http://localhost:${PORT}`);

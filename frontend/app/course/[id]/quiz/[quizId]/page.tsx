@@ -45,14 +45,16 @@ export default function QuizPage() {
     setSelectedAnswer(optionIndex);
 
     if (optionIndex === currentQuestion.answer_index) {
-      setScore(score + 1);
-    }
-
-    // Handle if this is the last questions; update the high score
-    if (currentQuestionIndex == questions.length - 1) {
-      updateScoreHandler(quizId, score + 1);
+      setScore(prevScore => prevScore + 1);
     }
   };
+
+  // Add useEffect to handle final score update
+  useEffect(() => {
+    if (currentQuestionIndex === questions.length - 1 && selectedAnswer !== null) {
+      updateScoreHandler(quizId, score);
+    }
+  }, [currentQuestionIndex, selectedAnswer, score, quizId]);
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questions.length - 1) {

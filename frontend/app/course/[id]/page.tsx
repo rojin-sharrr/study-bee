@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CourseService, AssetService } from "@/services";
 import { useEffect, useState } from "react";
@@ -27,7 +27,6 @@ import {
   MessageSquare,
   Loader2,
 } from "lucide-react";
-import { stat } from "fs";
 
 const CoursePage = () => {
   const params = useParams();
@@ -42,15 +41,15 @@ const CoursePage = () => {
 
   const deleteAssetHandler = async (assetId: string) => {
     try {
-      const response = await AssetService.deleteAsset(assetId, courseId);
+      await AssetService.deleteAsset(assetId, courseId);
       await fetchAllAssets();
-    } catch (error) {
+    } catch (error: Error | unknown) {
       toast.error("Failed to delete asset");
-      console.log(`Error occurred in deleteAsset`);
+      console.log(`Error occurred in deleteAsset`, error instanceof Error ? error.message : error);
     }
   };
 
-  const checkAssetStatus = async () => {
+  const checkAssetStatus = useCallback(async () => {
     try {
       const status = await CourseService.getCourseAssetStatusById(courseId);
       if (!status) {
@@ -58,13 +57,13 @@ const CoursePage = () => {
       } else {
         setIsProcessing(false);
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast.error("Failed to check status of Assets");
-      console.log(`Error in checkAssetStatus: ${error.message || error}` );
+      console.log(`Error in checkAssetStatus: ${error instanceof Error ? error.message : error}`);
     }
-  };
+  }, [courseId]);
 
-  const fetchAllAssets = async () => {
+  const fetchAllAssets = useCallback(async () => {
     try {
       setLoading(true);
       const response = await AssetService.getAllAssets(courseId);
@@ -75,12 +74,13 @@ const CoursePage = () => {
       }
     } catch (error) {
       toast.error("Failed to load assets");
+      console.log(`Error in fetchAllAssets, ${error}`)
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]);
 
-  const fetchCourse = async () => {
+  const fetchCourse = useCallback(async () => {
     try {
       setLoading(true);
       const response = await CourseService.getCourseById(courseId);
@@ -95,10 +95,11 @@ const CoursePage = () => {
       const errorMessage = "Failed to fetch course";
       setError(errorMessage);
       toast.error(errorMessage);
+      console.log(`Error in fetchCourse: ${err}`)
     } finally {
       setLoading(false);
     }
-  };
+  }, [courseId]);
 
   const viewFileHandler = async (assetId: string, courseId: string) => {
     window.open(
@@ -110,19 +111,19 @@ const CoursePage = () => {
     if (courseId) {
       fetchCourse();
     }
-  }, [courseId]);
+  }, [courseId, fetchCourse]);
 
   useEffect(() => {
     if (courseId) {
       fetchAllAssets();
     }
-  }, [courseId]);
+  }, [courseId, fetchAllAssets]);
 
   useEffect(() => {
     if (allAssets) {
       checkAssetStatus();
     }
-  }, [allAssets]);
+  }, [allAssets, checkAssetStatus]);
 
   if (loading) {
     return (
@@ -320,10 +321,10 @@ const CoursePage = () => {
                               ? "destructive"
                               : "default"
                           }
-                          className="w-full"
+                          className="min-w-[120px] flex items-center justify-center"
                         >
                           {asset.isEmbedding === "PROCESSING" && (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
                           )}
                           {asset.isEmbedding}
                         </Badge>

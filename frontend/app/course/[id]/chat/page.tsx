@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,15 +25,8 @@ export default function ChatbotPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const courseId = params.id as string;
-
-  const handleBack = () => {
-    if (isLoading && abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    router.push(`/course/${courseId}`);
-  };
-
-  const checkEmbedding = async () => {
+  
+  const checkEmbedding = useCallback(async () => {
       const response = await getChatbotResponse(
         inputText, 
         0.1, 
@@ -45,15 +38,14 @@ export default function ChatbotPage() {
       }
 
       if(!response.data.success){
-        // add a toast here
         toast.error("Some assets are still being embedded, please try again later");
         setTimeout(() => {
           router.push(`/course/${courseId}`);
-        }, 2000); // 1 second delay
+        }, 2000);
         return;
       }
       return;
-}
+  }, [courseId, inputText, router]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,8 +56,8 @@ export default function ChatbotPage() {
   }, [messages]);
 
   useEffect(() => {
-    checkEmbedding()
-  }, [courseId] );
+    checkEmbedding();
+  }, [checkEmbedding]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +95,8 @@ export default function ChatbotPage() {
       };
       setMessages(prev => [...prev, queryResponseMessage]);
 
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+    } catch (error: Error | unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
         toast.info('Request cancelled');
       } else {
         toast.error('Failed to get response from chatbot');

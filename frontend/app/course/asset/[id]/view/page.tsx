@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 
 const ViewPage = () => {
@@ -7,6 +7,29 @@ const ViewPage = () => {
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [filename, setFilename] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPdfData = async () => {
+      try {
+        const assetId = params.id as string;
+        const courseId = params.courseId as string;
+        const response = await fetch(`http://localhost:8000/api/asset/${assetId}/view?courseId=${courseId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch PDF data');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setFilename(`document-${assetId}.pdf`);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred while loading the PDF');
+      }
+    };
+
+    fetchPdfData();
+  }, [params.id, params.courseId]);
 
   const handleDownload = () => {
     if (pdfUrl) {

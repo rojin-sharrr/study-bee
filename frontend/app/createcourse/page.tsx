@@ -1,7 +1,7 @@
 "use client";
 
-import React, { use } from "react";
-import { useState, useEffect } from "react";
+import React from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { CourseService } from "@/services";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
+import Link from 'next/link';
 
 const CreateCourse = () => {
   const router = useRouter();
@@ -36,9 +37,9 @@ const CreateCourse = () => {
         setDescription("");
         router.push("/");
       }
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       toast.error('An unexpected error occurred');
-      setError(error.errorMessage);
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
     }
   };
 
@@ -67,7 +68,7 @@ const CreateCourse = () => {
         <CardFooter className="flex flex-col gap-2">
           <div className="text-sm text-muted-foreground text-center"></div>
           <Button variant="outline" className="w-full" asChild>
-            <a href="/">← Go Back</a>
+            <Link href="/">← Go Back</Link>
           </Button>
         </CardFooter>
       </Card>
